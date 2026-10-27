@@ -1,26 +1,171 @@
-import React, { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { FaWhatsapp } from 'react-icons/fa';
-import { FiArrowLeft, FiArrowRight, FiArrowUpRight, FiMail } from 'react-icons/fi';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation, useParams } from 'react-router-dom';
+import {
+  FiArrowDown,
+  FiArrowLeft,
+  FiArrowRight,
+  FiArrowUpRight,
+  FiClock,
+  FiSearch,
+} from 'react-icons/fi';
 import { blogArticles, blogCategories, featuredStory, getArticleSlug } from '../data/blogArticles.js';
-import { company } from '../data/company.js';
 import { useDocumentTitle } from '../hooks/useDocumentTitle.js';
 
-const coverStoryPath = `/blog/${featuredStory.slug}`;
+const tickerItems = [
+  'SEO Strategy',
+  'AI Search',
+  'GEO',
+  'Content Marketing',
+  'CRO',
+  'Paid Media',
+  'Analytics',
+  'Lead Generation',
+];
+
+function useBlogMeta(title, description, image, type = 'website') {
+  const { pathname } = useLocation();
+
+  useDocumentTitle(title, description);
+
+  useEffect(() => {
+    const origin = window.location.origin;
+    const canonicalUrl = new URL(pathname, origin).href;
+    const imageUrl = new URL(image, origin).href;
+    const values = {
+      'og:title': title,
+      'og:description': description,
+      'og:url': canonicalUrl,
+      'og:type': type,
+      'og:image': imageUrl,
+      'twitter:card': 'summary_large_image',
+      'twitter:title': title,
+      'twitter:description': description,
+      'twitter:image': imageUrl,
+    };
+    const managedNodes = [];
+
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      canonical.dataset.blogManaged = 'true';
+      document.head.appendChild(canonical);
+      managedNodes.push(canonical);
+    }
+    canonical.href = canonicalUrl;
+
+    Object.entries(values).forEach(([property, content]) => {
+      const selector = property.startsWith('og:')
+        ? `meta[property="${property}"]`
+        : `meta[name="${property}"]`;
+      let meta = document.querySelector(selector);
+      if (!meta) {
+        meta = document.createElement('meta');
+        if (property.startsWith('og:')) meta.setAttribute('property', property);
+        else meta.setAttribute('name', property);
+        meta.dataset.blogManaged = 'true';
+        document.head.appendChild(meta);
+        managedNodes.push(meta);
+      }
+      meta.content = content;
+    });
+
+    return () => {
+      managedNodes.forEach((node) => node.remove());
+    };
+  }, [description, image, pathname, title, type]);
+}
 
 function BlogHero() {
+  const heroRef = useRef(null);
+
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero) return undefined;
+
+    const handlePointerMove = (event) => {
+      const rect = hero.getBoundingClientRect();
+      hero.style.setProperty('--blog-pointer-x', `${((event.clientX - rect.left) / rect.width) * 100}%`);
+      hero.style.setProperty('--blog-pointer-y', `${((event.clientY - rect.top) / rect.height) * 100}%`);
+    };
+
+    hero.addEventListener('pointermove', handlePointerMove, { passive: true });
+    return () => hero.removeEventListener('pointermove', handlePointerMove);
+  }, []);
+
   return (
-    <section className="blog-hero">
-      <div className="container blog-hero-content">
-        <p className="blog-eyebrow"><span aria-hidden="true" /> The DigiMark journal</p>
-        <h1>Field notes from <span>Bangalore</span></h1>
-        <p className="blog-hero-subtitle">Sharp ideas on SEO, GEO &amp; growth.</p>
-        <p className="blog-hero-description">
-          A working agency’s journal, written for operators who care about pipeline, not vanity metrics. SEO, AI
-          search, CRO, paid media and the messy middle of the buyer journey.
-        </p>
+    <section ref={heroRef} className="blog-hero" aria-labelledby="blog-hero-title">
+      <div className="blog-hero-fallback" aria-hidden="true" />
+      <video
+        className="blog-hero-video"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        poster="/blog/photos/photo-analytics.jpg"
+        aria-hidden="true"
+      >
+        <source src="/blog/blog-hero.mp4" type="video/mp4" />
+      </video>
+      <div className="blog-hero-grid" aria-hidden="true" />
+      <div className="blog-hero-overlay" aria-hidden="true" />
+
+      <div className="container blog-hero-inner">
+        <div className="blog-hero-copy">
+          <p className="blog-eyebrow"><span aria-hidden="true" /> INSIGHTS, IDEAS &amp; GROWTH</p>
+          <h1 id="blog-hero-title">Field notes from <span>Bangalore</span></h1>
+          <p className="blog-hero-subtitle">Sharp ideas on SEO, GEO &amp; growth.</p>
+          <p className="blog-hero-description">
+            A working agency&apos;s journal, written for operators who care about pipeline, not vanity metrics.
+            Explore SEO, AI search, CRO, paid media, content strategy, and the messy middle of the buyer journey.
+          </p>
+          <div className="blog-hero-actions">
+            <a className="btn btn-primary btn-lg" href="#latest-articles">
+              <span>Explore the latest insights</span>
+              <FiArrowDown aria-hidden="true" />
+            </a>
+            <Link className="btn btn-outline btn-lg" to="/services">
+              <span>Explore our services</span>
+              <FiArrowRight aria-hidden="true" />
+            </Link>
+          </div>
+          <div className="blog-hero-signals" aria-label="Editorial focus areas">
+            <span><i aria-hidden="true" /> Built from live client questions</span>
+            <span><i aria-hidden="true" /> No vanity metrics</span>
+            <span><i aria-hidden="true" /> Practical next moves</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="blog-ticker" aria-label="Topics covered in the journal">
+        <div className="blog-ticker-track">
+          {[...tickerItems, ...tickerItems].map((item, index) => (
+            <React.Fragment key={`${item}-${index}`}>
+              <span>{item}</span>
+              <b aria-hidden="true">→</b>
+            </React.Fragment>
+          ))}
+        </div>
       </div>
     </section>
+  );
+}
+
+function ArticleThumbnail({ article, featured = false }) {
+  return (
+    <div className={`blog-thumbnail${featured ? ' blog-thumbnail-featured' : ''}`}>
+      <img
+        src={article.thumbnail}
+        alt={article.thumbnailAlt}
+        width="800"
+        height="520"
+        loading={featured ? 'eager' : 'lazy'}
+        decoding="async"
+      />
+      <span className="blog-thumbnail-scan" aria-hidden="true" />
+      <span className="blog-thumbnail-label">{article.category}</span>
+    </div>
   );
 }
 
@@ -28,27 +173,33 @@ function FeaturedCoverStory() {
   return (
     <section className="blog-featured-section" aria-labelledby="blog-featured-title">
       <div className="container">
+        <div className="blog-section-kicker">
+          <p className="blog-eyebrow">Cover story</p>
+          <span>01 / 08</span>
+        </div>
         <article className="blog-featured-card">
           <div className="blog-featured-copy">
-            <p className="blog-featured-category">{featuredStory.category}</p>
-            <h2 id="blog-featured-title">{featuredStory.title}</h2>
-            <p className="blog-featured-description">{featuredStory.description}</p>
-            <div className="blog-featured-meta">
-              <span className="blog-author-monogram" aria-hidden="true">D</span>
-              <span><small>{featuredStory.authorLabel}</small><strong>{featuredStory.author}</strong></span>
+            <div className="blog-featured-meta-line">
+              <span className="blog-featured-pill">{featuredStory.category}</span>
+              <span><FiClock aria-hidden="true" /> {featuredStory.readingTime} read</span>
             </div>
-            <Link to={coverStoryPath} className="blog-featured-link">
+            <h2 id="blog-featured-title">{featuredStory.title}</h2>
+            <p className="blog-featured-description">{featuredStory.excerpt}</p>
+            <div className="blog-featured-note">
+              <span className="blog-signal-dot" aria-hidden="true" />
+              <span>Illustrative framework. No fabricated case studies or performance claims.</span>
+            </div>
+            <Link to={`/blog/${getArticleSlug(featuredStory)}`} className="blog-featured-link">
               Read the cover story <FiArrowUpRight aria-hidden="true" />
             </Link>
           </div>
-          <Link to={coverStoryPath} className="blog-featured-visual" aria-label={`Read cover story: ${featuredStory.title}`}>
-            <img
-              src="/blog/cover-dashboard.svg"
-              alt="Analytics dashboard with a rising conversion trend and lead funnel"
-              width="960"
-              height="620"
-            />
-            <span className="blog-visual-caption">From first call to closed deal <FiArrowUpRight aria-hidden="true" /></span>
+          <Link
+            to={`/blog/${getArticleSlug(featuredStory)}`}
+            className="blog-featured-visual"
+            aria-label={`Read cover story: ${featuredStory.title}`}
+          >
+            <ArticleThumbnail article={featuredStory} featured />
+            <span className="blog-visual-caption">AI calling, with a human handoff <FiArrowUpRight aria-hidden="true" /></span>
           </Link>
         </article>
       </div>
@@ -56,31 +207,37 @@ function FeaturedCoverStory() {
   );
 }
 
-function ArticleCard({ article }) {
-  const articlePath = `/blog/${getArticleSlug(article.title)}`;
+function ArticleCard({ article, index }) {
+  const articlePath = `/blog/${getArticleSlug(article)}`;
 
   return (
-    <article className="blog-article-card">
-      <div className="blog-card-meta">
-        <span className="blog-card-number">{String(article.number).padStart(2, '0')}</span>
-        <span className="blog-card-category">{article.category}</span>
-      </div>
-      <div className="blog-card-date-row">
-        <time dateTime={article.dateTime}>{article.date}</time>
-        <span aria-hidden="true">·</span>
-        <span>{article.readingTime} read</span>
-      </div>
-      <h3><Link to={articlePath}>{article.title}</Link></h3>
-      <p>{article.description}</p>
-      <Link to={articlePath} className="blog-read-link" aria-label={`Read ${article.title}`}>
-        Read <FiArrowRight aria-hidden="true" />
+    <article className="blog-article-card" style={{ '--article-index': index }}>
+      <Link to={articlePath} className="blog-card-image-link" aria-label={`Read ${article.title}`}>
+        <ArticleThumbnail article={article} />
       </Link>
+      <div className="blog-card-body">
+        <div className="blog-card-meta">
+          <span className="blog-card-number">{String(article.number).padStart(2, '0')}</span>
+          <span className="blog-card-category">{article.category}</span>
+        </div>
+        <div className="blog-card-date-row">
+          <time dateTime={article.dateTime}>{article.date}</time>
+          <span aria-hidden="true">·</span>
+          <span>{article.readingTime} read</span>
+        </div>
+        <h3><Link to={articlePath}>{article.title}</Link></h3>
+        <p>{article.excerpt}</p>
+        <Link to={articlePath} className="blog-read-link" aria-label={`Read ${article.title}`}>
+          Read Article <FiArrowRight aria-hidden="true" />
+        </Link>
+      </div>
     </article>
   );
 }
 
 function BlogArchive() {
   const [activeCategory, setActiveCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const categoryCounts = useMemo(
     () => blogArticles.reduce((counts, article) => {
@@ -89,19 +246,50 @@ function BlogArchive() {
     }, {}),
     []
   );
-  const displayedArticles = activeCategory === 'All'
-    ? blogArticles
-    : blogArticles.filter((article) => article.category === activeCategory);
+
+  const displayedArticles = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    return blogArticles.filter((article) => {
+      const matchesCategory = activeCategory === 'All' || article.category === activeCategory;
+      const searchableText = `${article.title} ${article.excerpt} ${article.category}`.toLowerCase();
+      return matchesCategory && (!query || searchableText.includes(query));
+    });
+  }, [activeCategory, searchQuery]);
+
+  const clearFilters = () => {
+    setActiveCategory('All');
+    setSearchQuery('');
+  };
 
   return (
-    <section className="blog-archive-section" id="archive" aria-labelledby="blog-archive-title">
+    <section className="blog-archive-section" id="latest-articles" aria-labelledby="blog-archive-title">
       <div className="container">
         <div className="blog-section-heading">
           <div>
-            <p className="blog-eyebrow">Ideas worth keeping</p>
-            <h2 id="blog-archive-title">The archive</h2>
+            <p className="blog-eyebrow">The working archive</p>
+            <h2 id="blog-archive-title">Latest articles</h2>
           </div>
-          <p className="blog-archive-total">{blogArticles.length} articles, newest first</p>
+          <p className="blog-archive-total">{blogArticles.length} field notes, newest first</p>
+        </div>
+
+        <div className="blog-archive-tools">
+          <label className="blog-search-field">
+            <span className="visually-hidden">Search articles</span>
+            <FiSearch aria-hidden="true" />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search the archive"
+              aria-label="Search articles by title or description"
+            />
+          </label>
+          <p className="blog-results-count" aria-live="polite">
+            {displayedArticles.length} {displayedArticles.length === 1 ? 'article' : 'articles'}
+            {activeCategory !== 'All' ? ` in ${activeCategory}` : ''}
+            {searchQuery ? ` matching “${searchQuery}”` : ''}
+          </p>
         </div>
 
         <div className="blog-filter-list" role="group" aria-label="Filter articles by category">
@@ -126,22 +314,16 @@ function BlogArchive() {
           ))}
         </div>
 
-        <p className="blog-results-count" aria-live="polite">
-          Showing {displayedArticles.length} {displayedArticles.length === 1 ? 'article' : 'articles'}
-          {activeCategory !== 'All' ? ` in ${activeCategory}` : ''}
-        </p>
-
         {displayedArticles.length > 0 ? (
           <div className="blog-article-grid">
-            {displayedArticles.map((article) => <ArticleCard key={article.number} article={article} />)}
+            {displayedArticles.map((article, index) => <ArticleCard key={article.slug} article={article} index={index} />)}
           </div>
         ) : (
           <div className="blog-empty-state" role="status">
-            <h3>No articles in this category yet</h3>
-            <p>Choose another topic or view the full archive.</p>
-            <button type="button" className="blog-empty-reset" onClick={() => setActiveCategory('All')}>
-              Show all articles
-            </button>
+            <span className="blog-empty-mark" aria-hidden="true">?</span>
+            <h3>No matching field notes</h3>
+            <p>Try a broader search or return to the full archive.</p>
+            <button type="button" className="blog-empty-reset" onClick={clearFilters}>Show all articles</button>
           </div>
         )}
       </div>
@@ -149,66 +331,97 @@ function BlogArchive() {
   );
 }
 
-function Newsletter() {
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState('');
-  const whatsappMessage = encodeURIComponent('Hello, I’d like to get the SEO & GEO Brief on WhatsApp.');
-  const whatsappHref = `https://wa.me/${company.whatsapp}?text=${whatsappMessage}`;
+function getSectionId(article, heading, index) {
+  return `${article.slug}-${index}-${getArticleSlug(heading)}`;
+}
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    setStatus('Your email is valid, but newsletter signup is not connected yet. No subscription was made.');
-  }
+function ArticleBody({ article }) {
+  return (
+    <div className="blog-article-body">
+      <p className="blog-article-intro">{article.content.intro}</p>
+      {article.content.sections.map((section, index) => (
+        <section key={section.heading} className="blog-content-section" id={getSectionId(article, section.heading, index)}>
+          <h2>{section.heading}</h2>
+          {section.paragraphs?.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+          {section.subsections?.map((subsection) => (
+            <div className="blog-content-subsection" key={subsection.heading}>
+              <h3>{subsection.heading}</h3>
+              {subsection.paragraphs?.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+            </div>
+          ))}
+          {section.bullets && (
+            <ul>
+              {section.bullets.map((bullet) => <li key={bullet}>{bullet}</li>)}
+            </ul>
+          )}
+        </section>
+      ))}
+      <aside className="blog-article-conclusion">
+        <span className="blog-eyebrow">The useful signal</span>
+        <p>{article.content.conclusion}</p>
+      </aside>
+    </div>
+  );
+}
+
+function ArticleTableOfContents({ article }) {
+  return (
+    <nav className="blog-table-of-contents" aria-label="Table of contents">
+      <span className="blog-toc-label">On this page</span>
+      <ol>
+        {article.content.sections.map((section, index) => (
+          <li key={section.heading}>
+            <a href={`#${getSectionId(article, section.heading, index)}`}>{section.heading}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
+function RelatedArticles({ article }) {
+  const related = blogArticles
+    .filter((item) => item.slug !== article.slug)
+    .sort((a, b) => Number(b.category === article.category) - Number(a.category === article.category))
+    .slice(0, 3);
 
   return (
-    <section className="blog-newsletter-section" aria-labelledby="blog-newsletter-title">
-      <div className="container">
-        <div className="blog-newsletter-card">
-          <div className="blog-newsletter-copy">
-            <p className="blog-eyebrow">A useful signal, once a month</p>
-            <h2 id="blog-newsletter-title">The SEO &amp; GEO Brief</h2>
-            <p className="blog-newsletter-subtitle">One email, once a month.</p>
-            <p>
-              The biggest shifts in Google AI Overviews, ChatGPT citations and search, explained in plain English,
-              with what to do about them.
-            </p>
-          </div>
-          <div className="blog-newsletter-actions">
-            <form className="blog-newsletter-form" onSubmit={handleSubmit}>
-              <label className="visually-hidden" htmlFor="blog-newsletter-email">Email address</label>
-              <div className="blog-email-input-wrap">
-                <FiMail aria-hidden="true" />
-                <input
-                  id="blog-newsletter-email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@company.com"
-                  value={email}
-                  onChange={(event) => {
-                    setEmail(event.target.value);
-                    setStatus('');
-                  }}
-                  required
-                />
-              </div>
-              <button type="submit" className="blog-subscribe-button">Subscribe by email</button>
-            </form>
-            <a className="blog-whatsapp-button" href={whatsappHref} target="_blank" rel="noopener noreferrer">
-              <FaWhatsapp aria-hidden="true" /> Get it on WhatsApp
-            </a>
-            <p className="blog-newsletter-status" role="status" aria-live="polite">{status}</p>
-          </div>
-        </div>
+    <aside className="blog-related-section" aria-labelledby="related-articles-title">
+      <div className="blog-related-heading">
+        <p className="blog-eyebrow">Keep reading</p>
+        <h2 id="related-articles-title">Related articles</h2>
+      </div>
+      <div className="blog-related-grid">
+        {related.map((item) => (
+          <Link key={item.slug} to={`/blog/${getArticleSlug(item)}`} className="blog-related-card">
+            <ArticleThumbnail article={item} />
+            <span>{item.category} <FiArrowUpRight aria-hidden="true" /></span>
+            <h3>{item.title}</h3>
+          </Link>
+        ))}
+      </div>
+    </aside>
+  );
+}
+
+function ArticleNotFound() {
+  return (
+    <section className="blog-detail-section blog-not-found">
+      <div className="container blog-detail-container">
+        <p className="blog-eyebrow">The working archive</p>
+        <h1>That article is not in the archive.</h1>
+        <p>Try the latest articles instead.</p>
+        <Link className="blog-back-link" to="/blog"><FiArrowLeft aria-hidden="true" /> Back to the blog</Link>
       </div>
     </section>
   );
 }
 
 export default function Blog() {
-  useDocumentTitle(
-    'Field notes from Bangalore — SEO, GEO & Growth',
-    'Sharp ideas on SEO, GEO, AI search, CRO and growth from a working agency journal.'
+  useBlogMeta(
+    'Field notes from Bangalore - SEO, GEO & growth',
+    'Sharp ideas on SEO, GEO, AI search, CRO, paid media, content strategy, analytics, and growth from a working agency journal.',
+    '/blog/photos/photo-analytics.jpg'
   );
 
   return (
@@ -216,67 +429,61 @@ export default function Blog() {
       <BlogHero />
       <FeaturedCoverStory />
       <BlogArchive />
-      <Newsletter />
     </>
   );
 }
 
 export function BlogArticle() {
   const { slug } = useParams();
-  const article = slug === featuredStory.slug
-    ? featuredStory
-    : blogArticles.find((item) => getArticleSlug(item.title) === slug);
+  const article = blogArticles.find((item) => item.slug === slug);
 
-  useDocumentTitle(
+  useBlogMeta(
     article?.title || 'Article not found',
-    article?.description || 'The requested article could not be found in the blog archive.'
+    article?.excerpt || 'The requested article could not be found in the One Way Digital Media journal.',
+    article?.thumbnail || '/blog/photos/photo-analytics.jpg',
+    'article'
   );
 
-  if (!article) {
-    return (
-      <section className="blog-detail-section">
-        <div className="container blog-detail-container">
-          <p className="blog-eyebrow">The DigiMark journal</p>
-          <h1>Article not found</h1>
-          <p>This article is not in the archive.</p>
-          <Link className="blog-back-link" to="/blog"><FiArrowLeft aria-hidden="true" /> Back to the blog</Link>
-        </div>
-      </section>
-    );
-  }
+  if (!article) return <ArticleNotFound />;
 
-  const isFeatured = article === featuredStory;
+  const relatedServiceLinks = article.serviceLinks || [];
 
   return (
-    <article className="blog-detail-section">
-      <div className="container blog-detail-container">
-        <Link className="blog-back-link" to="/blog"><FiArrowLeft aria-hidden="true" /> Back to the archive</Link>
-        <p className="blog-detail-category">{isFeatured ? article.category : `Article ${String(article.number).padStart(2, '0')} · ${article.category}`}</p>
-        <h1>{article.title}</h1>
-        <div className="blog-detail-meta">
-          {isFeatured
-            ? <span>{article.authorLabel}: {article.author}</span>
-            : <><time dateTime={article.dateTime}>{article.date}</time><span>{article.readingTime} read</span></>}
+    <>
+      <section className="blog-detail-section" aria-labelledby="article-title">
+        <div className="container blog-detail-container">
+          <Link className="blog-back-link" to="/blog"><FiArrowLeft aria-hidden="true" /> Back to the blog</Link>
+          <div className="blog-detail-category-row">
+            <span className="blog-featured-pill">{article.category}</span>
+            <span><time dateTime={article.dateTime}>{article.date}</time></span>
+            <span><FiClock aria-hidden="true" /> {article.readingTime} read</span>
+          </div>
+          <h1 id="article-title">{article.title}</h1>
+          <p className="blog-detail-description">{article.excerpt}</p>
+          <div className="blog-detail-cover">
+            <ArticleThumbnail article={article} featured />
+          </div>
         </div>
-        <p className="blog-detail-description">{article.description}</p>
-        {isFeatured && (
-          <img
-            className="blog-detail-image"
-            src="/blog/cover-dashboard.svg"
-            alt="Analytics dashboard with a rising conversion trend and lead funnel"
-            width="960"
-            height="620"
-          />
-        )}
-        <div className="blog-detail-content">
-          <h2>About this article</h2>
-          <p>
-            {isFeatured
-              ? 'This cover story is listed in the blog brief, but its full long-form content has not been provided yet.'
-              : 'The archive entry currently includes the supplied summary. Full long-form article content has not been provided yet.'}
-          </p>
+      </section>
+
+      <section className="blog-reader-section">
+        <div className="container blog-reader-layout">
+          <ArticleTableOfContents article={article} />
+          <ArticleBody article={article} />
+          <aside className="blog-service-note">
+            <span className="blog-eyebrow">A related next move</span>
+            <h2>Turn the idea into a working system.</h2>
+            <p>See how the right service mix can turn a useful insight into a measurable customer journey.</p>
+            <div className="blog-service-links">
+              {relatedServiceLinks.map((service) => <Link key={service.to} to={service.to}>{service.label} <FiArrowUpRight aria-hidden="true" /></Link>)}
+            </div>
+          </aside>
         </div>
+      </section>
+
+      <div className="container">
+        <RelatedArticles article={article} />
       </div>
-    </article>
+    </>
   );
 }

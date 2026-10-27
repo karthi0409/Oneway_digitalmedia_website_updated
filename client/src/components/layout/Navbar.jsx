@@ -12,7 +12,6 @@ const navItems = [
       { label: 'Who We Are', description: 'Our story and approach', path: '/about#about-intro' },
       { label: 'Our Team', description: 'The people behind the work', path: '/about#our-team' },
       { label: 'Careers', description: 'Join DigiMark', path: '/about#careers' },
-      { label: 'Blog', description: 'SEO, GEO & growth insights', path: '/about#company-blog' },
     ],
   },
   {
@@ -25,7 +24,9 @@ const navItems = [
   },
   { label: 'Experience', path: '/experience' },
   { label: 'Projects', path: '/projects' },
+  { label: 'Blog', path: '/blog' },
   { label: 'About Us', path: '/about' },
+  { label: 'Contact', path: '/contact' },
 ];
 
 export default function Navbar() {

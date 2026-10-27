@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 const inputs = [
   { title: 'Ideal customer', detail: 'Who is ready to choose you?' },
@@ -30,33 +30,142 @@ function SignalCards({ items, side }) {
   );
 }
 
-function Connectors({ animate }) {
-  const paths = [
-    { id: 'input-one', d: 'M 275 78 C 360 78, 380 205, 451 224', color: 'input' },
-    { id: 'input-two', d: 'M 275 230 C 356 230, 380 265, 451 282', color: 'input' },
-    { id: 'input-three', d: 'M 275 382 C 356 382, 380 349, 451 338', color: 'input' },
-    { id: 'input-four', d: 'M 275 534 C 360 534, 380 407, 451 396', color: 'input' },
-    { id: 'outcome-one', d: 'M 925 78 C 840 78, 820 205, 749 224', color: 'outcome' },
-    { id: 'outcome-two', d: 'M 925 230 C 844 230, 820 265, 749 282', color: 'outcome' },
-    { id: 'outcome-three', d: 'M 925 382 C 844 382, 820 349, 749 338', color: 'outcome' },
-    { id: 'outcome-four', d: 'M 925 534 C 840 534, 820 407, 749 396', color: 'outcome' },
-  ];
+const CONNECTOR_VIEWBOX = { width: 1200, height: 612 };
+const CONNECTOR_TARGET_OFFSETS = [-0.25, -0.075, 0.1, 0.275];
+
+function createConnectorPath(start, end, direction) {
+  const distance = Math.abs(end.x - start.x);
+  const controlDistance = Math.max(48, distance * 0.36);
+  const firstControlX = direction === 'input'
+    ? start.x + controlDistance
+    : start.x - controlDistance;
+  const secondControlX = direction === 'input'
+    ? end.x - controlDistance
+    : end.x + controlDistance;
+
+  return [
+    `M ${start.x.toFixed(2)} ${start.y.toFixed(2)}`,
+    `C ${firstControlX.toFixed(2)} ${start.y.toFixed(2)},`,
+    `${secondControlX.toFixed(2)} ${end.y.toFixed(2)},`,
+    `${end.x.toFixed(2)} ${end.y.toFixed(2)}`,
+  ].join(' ');
+}
+
+function measureConnectorPaths(network) {
+  const networkRect = network.getBoundingClientRect();
+  const inputCards = [...network.querySelectorAll('.growth-engine-cards-input .growth-engine-card')];
+  const outcomeCards = [...network.querySelectorAll('.growth-engine-cards-outcome .growth-engine-card')];
+  const sphere = network.querySelector('.growth-engine-sphere');
+
+  if (!networkRect.width || !networkRect.height || inputCards.length !== 4 || outcomeCards.length !== 4 || !sphere) {
+    return [];
+  }
+
+  const toViewBoxPoint = (x, y) => ({
+    x: (x / networkRect.width) * CONNECTOR_VIEWBOX.width,
+    y: (y / networkRect.height) * CONNECTOR_VIEWBOX.height,
+  });
+  const getCenterY = (element) => {
+    const rect = element.getBoundingClientRect();
+    return rect.top + rect.height / 2 - networkRect.top;
+  };
+  const sphereRect = sphere.getBoundingClientRect();
+  const sphereLeft = sphereRect.left - networkRect.left;
+  const sphereRight = sphereRect.right - networkRect.left;
+  const sphereCenterY = sphereRect.top + sphereRect.height / 2 - networkRect.top;
+  const targetYs = CONNECTOR_TARGET_OFFSETS.map((offset) => sphereCenterY + sphereRect.height * offset);
+
+  const inputPaths = inputCards.map((card, index) => {
+    const cardRect = card.getBoundingClientRect();
+    const start = toViewBoxPoint(cardRect.right - networkRect.left + 2, getCenterY(card));
+    const end = toViewBoxPoint(sphereLeft + 2, targetYs[index]);
+
+    return {
+      id: `input-${index}`,
+      d: createConnectorPath(start, end, 'input'),
+      color: 'input',
+      start,
+    };
+  });
+
+  const outcomePaths = outcomeCards.map((card, index) => {
+    const cardRect = card.getBoundingClientRect();
+    const start = toViewBoxPoint(cardRect.left - networkRect.left - 2, getCenterY(card));
+    const end = toViewBoxPoint(sphereRight - 2, targetYs[index]);
+
+    return {
+      id: `outcome-${index}`,
+      d: createConnectorPath(start, end, 'outcome'),
+      color: 'outcome',
+      start,
+    };
+  });
+
+  return [...inputPaths, ...outcomePaths];
+}
+
+function Connectors({ animate, networkRef, isVisible }) {
+  const [paths, setPaths] = useState([]);
+
+  useLayoutEffect(() => {
+    const network = networkRef.current;
+    if (!network) return undefined;
+
+    let frameId;
+    let settleId;
+    const measure = () => {
+      setPaths(measureConnectorPaths(network));
+    };
+    const scheduleMeasure = () => {
+      window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(measure);
+    };
+
+    measure();
+    settleId = window.setTimeout(measure, isVisible ? 720 : 0);
+
+    if ('ResizeObserver' in window) {
+      const observer = new ResizeObserver(scheduleMeasure);
+      observer.observe(network);
+      network.querySelectorAll('.growth-engine-card, .growth-engine-sphere').forEach((element) => observer.observe(element));
+
+      return () => {
+        observer.disconnect();
+        window.cancelAnimationFrame(frameId);
+        window.clearTimeout(settleId);
+      };
+    }
+
+    window.addEventListener('resize', scheduleMeasure);
+    return () => {
+      window.removeEventListener('resize', scheduleMeasure);
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(settleId);
+    };
+  }, [isVisible, networkRef]);
 
   return (
-    <svg className="growth-engine-connectors" viewBox="0 0 1200 612" preserveAspectRatio="none" aria-hidden="true">
-      {paths.map(({ id, d, color }, index) => (
+    <svg
+      className="growth-engine-connectors"
+      viewBox={`0 0 ${CONNECTOR_VIEWBOX.width} ${CONNECTOR_VIEWBOX.height}`}
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      {paths.map(({ id, d, color, start }, index) => (
         <g className={`growth-engine-connector growth-engine-connector-${color}`} key={id}>
           <path d={d} pathLength="1" />
-          <circle r="3">
-            {animate && (
+          {animate ? (
+            <circle r="3">
               <animateMotion
                 dur={`${3.6 + (index % 3) * 0.55}s`}
                 begin={`${index * 0.24}s`}
                 repeatCount="indefinite"
                 path={d}
               />
-            )}
-          </circle>
+            </circle>
+          ) : (
+            <circle cx={start.x} cy={start.y} r="3" />
+          )}
         </g>
       ))}
     </svg>
@@ -66,6 +175,8 @@ function Connectors({ animate }) {
 function GrowthSphere({ animate }) {
   const firstWave = 'M -30 218 C 42 152, 68 265, 137 203 S 239 142, 300 203 S 370 259, 430 185';
   const secondWave = 'M -30 187 C 42 258, 81 140, 143 202 S 237 265, 302 196 S 370 144, 430 225';
+  const analysisWave = 'M -30 207 C 34 181, 74 232, 137 205 S 237 176, 301 205 S 370 231, 430 198';
+  const analysisWaveShift = 'M -30 202 C 34 227, 77 178, 140 201 S 238 232, 302 199 S 370 179, 430 208';
 
   return (
     <div className="growth-engine-sphere-wrap" aria-label="An animated visualization of business growth">
@@ -122,6 +233,32 @@ function GrowthSphere({ animate }) {
               {animate && <animate attributeName="d" dur="7s" repeatCount="indefinite" values={`${firstWave};${secondWave};${firstWave}`} />}
             </path>
             <path
+              className="growth-engine-energy-trace-glow"
+              d={analysisWave}
+              fill="none"
+              stroke="#d9f5ff"
+              strokeLinecap="round"
+              strokeWidth="7"
+            >
+              {animate && <animate attributeName="d" dur="5.2s" repeatCount="indefinite" values={`${analysisWave};${analysisWaveShift};${analysisWave}`} />}
+            </path>
+            <path
+              className="growth-engine-energy-trace"
+              d={analysisWave}
+              fill="none"
+              stroke="#f5fcff"
+              strokeLinecap="round"
+              strokeWidth="1.8"
+              strokeDasharray="1 8"
+            >
+              {animate && <animate attributeName="d" dur="5.2s" repeatCount="indefinite" values={`${analysisWave};${analysisWaveShift};${analysisWave}`} />}
+            </path>
+            <circle className="growth-engine-energy-trace-point" r="3.5" fill="#f5fcff">
+              {animate && (
+                <animateMotion dur="4.6s" repeatCount="indefinite" path={analysisWave} />
+              )}
+            </circle>
+            <path
               d="M 28 292 C 96 266, 151 316, 205 285 S 302 263, 372 302"
               fill="none"
               stroke="#bce9ff"
@@ -142,6 +279,7 @@ function GrowthSphere({ animate }) {
 
 export default function GrowthEngine() {
   const sectionRef = useRef(null);
+  const networkRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(
     () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -194,8 +332,8 @@ export default function GrowthEngine() {
           </p>
         </header>
 
-        <div className="growth-engine-network">
-          <Connectors animate={!reducedMotion} />
+        <div ref={networkRef} className="growth-engine-network">
+          <Connectors animate={!reducedMotion} networkRef={networkRef} isVisible={isVisible} />
           <SignalCards items={inputs} side="input" />
           <GrowthSphere animate={!reducedMotion} />
           <SignalCards items={outcomes} side="outcome" />

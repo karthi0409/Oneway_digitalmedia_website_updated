@@ -126,28 +126,30 @@
 
 .growth-engine-connector path {
   fill: none;
-  stroke-width: 1.35;
+  stroke-width: 1.35px;
+  stroke-linecap: round;
   stroke-dasharray: 0.018 0.014;
   opacity: 0.62;
+  vector-effect: non-scaling-stroke;
   animation: growth-connector-pulse 4s ease-in-out infinite alternate;
 }
 
 .growth-engine-connector-input path {
-  stroke: rgba(255, 177, 94, 0.6);
+  stroke: var(--growth-orange);
 }
 
 .growth-engine-connector-outcome path {
-  stroke: rgba(100, 223, 160, 0.62);
+  stroke: var(--growth-emerald);
 }
 
 .growth-engine-connector-input circle {
-  fill: #ffc078;
-  filter: drop-shadow(0 0 4px rgba(255, 165, 84, 0.95));
+  fill: var(--growth-orange);
+  filter: drop-shadow(0 0 4px rgba(255, 177, 94, 0.95));
 }
 
 .growth-engine-connector-outcome circle {
-  fill: #73edaa;
-  filter: drop-shadow(0 0 4px rgba(78, 235, 153, 0.95));
+  fill: var(--growth-emerald);
+  filter: drop-shadow(0 0 4px rgba(100, 223, 160, 0.95));
 }
 
 .growth-engine-cards {
@@ -326,6 +328,21 @@
 .growth-engine-energy-core {
   opacity: 0.94;
   filter: drop-shadow(0 0 10px rgba(139, 151, 255, 0.78));
+}
+
+.growth-engine-energy-trace-glow {
+  opacity: 0.28;
+  filter: blur(4px);
+}
+
+.growth-engine-energy-trace {
+  opacity: 0.8;
+  filter: drop-shadow(0 0 3px rgba(218, 245, 255, 0.78));
+}
+
+.growth-engine-energy-trace-point {
+  opacity: 0.95;
+  filter: drop-shadow(0 0 5px rgba(218, 245, 255, 0.95));
 }
 
 .growth-engine-sphere-highlight {

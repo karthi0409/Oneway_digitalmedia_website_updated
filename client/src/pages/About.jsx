@@ -121,7 +121,7 @@ export default function About() {
               <article className="company-blog-card" key={article.number}>
                 <p>{article.category} <span aria-hidden="true">·</span> {article.readingTime} read</p>
                 <h3>
-                  <Link to={`/blog/${getArticleSlug(article.title)}`}>{article.title}</Link>
+                  <Link to={`/blog/${getArticleSlug(article)}`}>{article.title}</Link>
                 </h3>
                 <span>{article.date}</span>
               </article>
