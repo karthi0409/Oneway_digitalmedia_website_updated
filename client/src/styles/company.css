@@ -1,0 +1,200 @@
+.company-team-note,
+.company-careers-card {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--white);
+  color: var(--navy);
+  box-shadow: var(--shadow-sm);
+}
+
+.about-purpose-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.about-purpose-card {
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025));
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.about-purpose-card h3 {
+  margin-bottom: 0.75rem;
+  color: var(--lime-bright);
+  font-size: 1.35rem;
+}
+
+.about-purpose-card p {
+  margin: 0;
+  color: rgba(241, 242, 240, 0.78);
+  line-height: 1.75;
+}
+
+.about-contact-form {
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.about-social-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.9rem;
+}
+
+.about-social-links a {
+  display: inline-flex;
+  min-width: 150px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.9rem 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--white);
+  font-weight: 650;
+  transition: background-color var(--transition-normal), border-color var(--transition-normal), color var(--transition-normal), transform var(--transition-normal);
+}
+
+.about-social-links a:hover {
+  transform: translateY(-2px);
+  border-color: rgba(139, 219, 69, 0.55);
+  background: rgba(139, 219, 69, 0.1);
+  color: var(--lime-bright);
+}
+
+.about-social-links svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--lime);
+}
+
+.company-team-note p,
+.company-careers-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+.company-careers-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  border-color: var(--navy-line);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025));
+  box-shadow: none;
+}
+
+.company-careers-card p {
+  color: rgba(241, 242, 240, 0.78);
+}
+
+.company-careers-card .btn {
+  flex: 0 0 auto;
+}
+
+.company-blog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.company-blog-card {
+  display: flex;
+  min-height: 235px;
+  flex-direction: column;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.035);
+  transition: border-color var(--transition-normal), transform var(--transition-normal), background-color var(--transition-normal);
+}
+
+.company-blog-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(139, 219, 69, 0.5);
+  background: rgba(139, 219, 69, 0.055);
+}
+
+.company-blog-card > p {
+  margin: 0 0 1rem;
+  color: var(--lime);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.company-blog-card h3 {
+  margin: 0 0 1rem;
+  color: var(--white);
+  font-size: 1.2rem;
+  line-height: 1.4;
+}
+
+.company-blog-card h3 a:hover {
+  color: var(--lime-bright);
+}
+
+.company-blog-card > span {
+  margin-top: auto;
+  color: var(--muted-light);
+  font-size: 0.78rem;
+}
+
+.company-blog-action {
+  margin-top: 1.75rem;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .nav-dropdown-company .nav-dropdown-menu {
+    min-width: min(400px, calc(100vw - 2rem));
+  }
+
+  .company-careers-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .about-purpose-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-social-links {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .about-social-links a {
+    width: 100%;
+  }
+
+  .company-blog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .company-blog-card {
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .company-blog-card,
+  .about-social-links a {
+    transition: none;
+  }
+
+  .about-social-links a:hover {
+    transform: none;
+  }
+}

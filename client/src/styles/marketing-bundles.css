@@ -1,0 +1,306 @@
+.marketing-bundles {
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 86% 4%, rgba(139, 219, 69, 0.08), transparent 34%),
+    linear-gradient(160deg, #f7f9f6, var(--paper));
+  color: var(--navy);
+}
+
+.marketing-bundles-header {
+  max-width: 720px;
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+  animation: bundle-fade-in 600ms ease-out both;
+}
+
+.marketing-bundles-label {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  color: var(--lime-text);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.marketing-bundles-header h2 {
+  max-width: 650px;
+  margin-bottom: 0.75rem;
+  color: var(--ink);
+  font-size: clamp(2rem, 4.5vw, 3.35rem);
+  letter-spacing: -0.055em;
+  line-height: 1.05;
+}
+
+.marketing-bundles-header p {
+  max-width: 580px;
+  color: var(--muted);
+  font-size: clamp(1rem, 1.6vw, 1.125rem);
+  line-height: 1.6;
+}
+
+.marketing-bundles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.marketing-bundle-card {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-width: 0;
+  min-height: 360px;
+  overflow: hidden;
+  align-items: flex-end;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 22px;
+  background: var(--ink-card);
+  box-shadow: 0 18px 38px rgba(7, 10, 8, 0.18);
+  color: var(--white);
+  animation: bundle-rise-in 650ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  animation-delay: calc(var(--bundle-order, 0) * 90ms);
+  transition:
+    transform 350ms cubic-bezier(0.2, 0.75, 0.25, 1),
+    box-shadow 350ms ease,
+    border-color 350ms ease;
+}
+
+.marketing-bundle-card::before,
+.marketing-bundle-card::after {
+  position: absolute;
+  z-index: -1;
+  content: '';
+  inset: 0;
+  pointer-events: none;
+}
+
+.marketing-bundle-card::before {
+  background:
+    linear-gradient(180deg, rgba(7, 10, 8, 0.04) 0%, rgba(7, 10, 8, 0.18) 30%, rgba(7, 10, 8, 0.94) 100%),
+    radial-gradient(ellipse at 15% 12%, rgba(139, 219, 69, 0.16), transparent 52%);
+  opacity: 0.88;
+  transition: opacity 450ms ease;
+}
+
+.marketing-bundle-card::after {
+  z-index: 1;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.marketing-bundle-image {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.001);
+  transition: transform 700ms cubic-bezier(0.2, 0.75, 0.25, 1), filter 500ms ease;
+}
+
+.marketing-bundle-content {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: clamp(1.15rem, 2vw, 1.55rem);
+}
+
+.marketing-bundle-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.55rem;
+  margin-bottom: 0.55rem;
+}
+
+.marketing-bundle-title-row h3 {
+  max-width: 72%;
+  color: var(--white);
+  font-size: clamp(1.05rem, 1.55vw, 1.35rem);
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
+.marketing-bundle-price {
+  flex: 0 0 auto;
+  margin-top: 0.05rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-full);
+  background: rgba(7, 10, 8, 0.58);
+  color: var(--white);
+  font-size: clamp(0.68rem, 0.9vw, 0.78rem);
+  font-weight: 750;
+  line-height: 1;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.marketing-bundle-description {
+  margin-bottom: 0.8rem;
+  color: rgba(255, 255, 255, 0.84);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.marketing-bundle-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.9rem;
+}
+
+.marketing-bundle-tags li {
+  padding: 0.28rem 0.58rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  background: rgba(7, 10, 8, 0.64);
+  color: rgba(255, 255, 255, 0.94);
+  font-size: 0.68rem;
+  font-weight: 650;
+  line-height: 1.2;
+  transition: background-color 250ms ease, border-color 250ms ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.marketing-bundle-cta {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-full);
+  background: var(--white);
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 750;
+  line-height: 1.2;
+  transition:
+    background-color 250ms ease,
+    color 250ms ease,
+    transform 250ms ease,
+    box-shadow 250ms ease;
+}
+
+.marketing-bundle-cta svg {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 250ms ease, transform 250ms ease;
+}
+
+.marketing-bundle-card:hover {
+  z-index: 2;
+  border-color: rgba(139, 219, 69, 0.45);
+  box-shadow: 0 26px 52px rgba(7, 10, 8, 0.26), 0 0 24px rgba(139, 219, 69, 0.1);
+  transform: translateY(-6px);
+}
+
+.marketing-bundle-card:hover .marketing-bundle-image {
+  filter: saturate(1.08);
+  transform: scale(1.055);
+}
+
+.marketing-bundle-card:hover::before {
+  opacity: 1;
+}
+
+.marketing-bundle-card:hover .marketing-bundle-tags li {
+  border-color: rgba(139, 219, 69, 0.2);
+}
+
+.marketing-bundle-cta:hover {
+  background: var(--lime-bright);
+  box-shadow: 0 6px 20px rgba(139, 219, 69, 0.24);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.marketing-bundle-cta:hover svg,
+.marketing-bundle-cta:focus-visible svg {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@keyframes bundle-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bundle-rise-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+  .marketing-bundles-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .marketing-bundle-card {
+    min-height: 350px;
+  }
+
+  .marketing-bundle-title-row h3 {
+    font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+  }
+}
+
+@media (max-width: 600px) {
+  .marketing-bundles-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .marketing-bundle-card {
+    min-height: 370px;
+    border-radius: 20px;
+  }
+
+  .marketing-bundle-content {
+    padding: 1.25rem;
+  }
+
+  .marketing-bundle-title-row h3 {
+    font-size: 1.25rem;
+  }
+
+  .marketing-bundle-price {
+    font-size: 0.76rem;
+  }
+
+  .marketing-bundle-description {
+    max-width: 34rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marketing-bundles-header,
+  .marketing-bundle-card {
+    animation: none;
+  }
+
+  .marketing-bundle-card,
+  .marketing-bundle-image,
+  .marketing-bundle-card::before,
+  .marketing-bundle-tags li,
+  .marketing-bundle-cta,
+  .marketing-bundle-cta svg {
+    transition: none;
+  }
+
+  .marketing-bundle-card:hover,
+  .marketing-bundle-card:hover .marketing-bundle-image,
+  .marketing-bundle-cta:hover {
+    transform: none;
+  }
+}

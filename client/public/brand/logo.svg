@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 84" width="360" height="84" fill="none">
+  <circle cx="41.5" cy="41.5" r="36.5" stroke="#fff" stroke-width="9" />
+
+  <path
+    d="m17 57 21-22 11 11 23-26-7-4 18-9-5 20-4-7-25 31-11-11-17 19Z"
+    fill="#90ee34"
+    stroke="#07100c"
+    stroke-width="2"
+    stroke-linejoin="round"
+  />
+
+  <path d="M92 17v50" stroke="#90ee34" stroke-width="1.5" />
+
+  <text
+    x="104"
+    y="43"
+    font-family="Outfit, Arial, Helvetica, sans-serif"
+    font-size="40"
+    font-weight="800"
+    fill="#90ee34"
+    letter-spacing="0.5"
+  >ONE WAY</text>
+
+  <text
+    x="105"
+    y="67"
+    font-family="Outfit, Arial, Helvetica, sans-serif"
+    font-size="18"
+    font-weight="700"
+    fill="#fff"
+    letter-spacing="4.2"
+  >DIGITAL MEDIA</text>
+
+  <path
+    d="m305 14 29 22-12 2-4 13-13-37Z"
+    fill="#fff"
+    stroke="#101711"
+    stroke-width="2"
+    stroke-linejoin="round"
+  />
+  <path
+    d="m331 12 3-7m-2 14 10-5m-11 13 10 3"
+    stroke="#90ee34"
+    stroke-width="3"
+    stroke-linecap="round"
+  />
+</svg>
